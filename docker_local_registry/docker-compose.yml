@@ -1,0 +1,24 @@
+version: '3.8'
+name: "LocalRegistry"
+
+services:
+  registry:
+    image: registry:2
+    ports: 
+      - "8000:5000"
+    environment:
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /datas
+    volumes:
+      - ./datas:/datas
+
+
+#docker run -d -p 5000:5000 --restart=always --name registry registry:2
+
+
+#docker tag my-project-name-front1 localhost:8000/my-project-name-front1
+#docker tag my-project-name-api localhost:8000/my-project-name-api
+#docker tag my-project-name-db localhost:8000/my-project-name-db
+
+#docker push localhost:8000/my-project-name-front1
+#docker push localhost:8000/my-project-name-api
+#docker push localhost:8000/my-project-name-db

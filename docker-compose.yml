@@ -1,0 +1,66 @@
+version: "3.8"
+name: "my-project-name"
+
+services:
+
+  api:
+    container_name: apiRest
+    #build: "./api"
+    image: localhost:8000/my-project-name-api
+    env_file:
+      - ./.env
+    environment:
+      APP_MYSQL_HOST: $APP_MYSQL_HOST
+      APP_MYSQL_USER: $APP_MYSQL_USER
+      APP_MYSQL_PASSWORD: $APP_MYSQL_PASSWORD
+      APP_MYSQL_DATABASE: $APP_MYSQL_DATABASE
+    restart: on-failure
+    depends_on:
+      - db
+    ports:
+      - "3001:3000"
+
+
+  db:
+    container_name: dbMysql
+    #build: "./db"
+    image: localhost:8000/my-project-name-db
+    volumes: 
+      - "./volumes:/var/lib/mysql"
+      - "./volumes2:/opt/lib/mysql"
+    env_file:
+      - ./.env
+    environment:
+      MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
+      MYSQL_PASSWORD: $MYSQL_PASSWORD
+      MYSQL_USER: $MYSQL_USER
+      MYSQL_DATABASE: $MYSQL_DATABASE
+    restart: always
+
+  front1:
+    container_name: anguDockerFile
+    #build: ./front1
+    image: localhost:8000/my-project-name-front1
+    ports: 
+      - "4200:4200"
+    depends_on:
+      - api
+    restart: on-failure
+
+  front2:
+    container_name: anguCompose
+    image: localhost:8000/node:latest
+    ports:
+      - "4201:4200"
+    working_dir: "/angu_compose"
+    volumes:
+      - "./front2:/angu_compose"
+    command: sh -c "npm install -g @angular/cli && ng serve --host 0.0.0.0"
+
+
+#volumes:
+
+#networks:
+
+
+#docker compose -f "docker-compose.yml" up -d --build 
