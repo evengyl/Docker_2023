@@ -64,6 +64,51 @@ services:
     volumes:
       - ./datas:/datas
 
+  springboot-api-demo:
+    container_name: "api"
+    build: "./sringBoot"
+    mem_limit: 1024m
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./.env
+    environment:
+      SPRING_DATASOURCE_URL: $SPRING_DATASOURCE_URL
+      SRPING_DATASOURCE_USERNAME: SRPING_DATASOURCE_USERNAME
+      SRPING_DATASOURCE_PASSWORD: SRPING_DATASOURCE_PASSWORD
+    networks:
+      - template_network
+
+  postgres:
+    container_name: postgres_database
+    image: postgres:latest
+    env_file:
+      - ./.env
+    environment:
+      POSTGRES_ROOT_PASSWORD: $POSTGRES_ROOT_PASSWORD
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+    networks:
+      - template_network
+    volumes:
+      - ./postgres/create_database.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
+  dbssms:
+    image: "mcr.microsoft.com/mssql/server:2019-latest"
+    container_name: mssql
+    user: root
+    environment:
+        ACCEPT_EULA: "Y"
+        SA_PASSWORD: Test1234_
+    ports:
+    - 1433:1433
+    volumes:
+    - ./mssql/data:/var/opt/mssql/data
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P test1234 -Q "SELECT 1" || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 3
 
 #docker run -d -p 5000:5000 --restart=always --name registry registry:2
 
@@ -78,8 +123,9 @@ services:
 
 #volumes:
 
-# networks:
-#   backend:
-#   front:
-
+networks:
+  backend:
+  front:
+  template_network:
+    driver: bridge
 #docker compose -f "docker-compose.yml" up -d --build 
