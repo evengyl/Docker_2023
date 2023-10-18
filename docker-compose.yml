@@ -33,16 +33,25 @@ services:
       MYSQL_USER: $MYSQL_USER
       MYSQL_DATABASE: $MYSQL_DATABASE
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '10'
+          memory: 512m
+        reservations:
+          cpus: '5'
+          memory: 256m
 
 
   angu_prod:
     container_name: angularProduction
-    build: ./anguProd
+    build: ./anguProdBuilder
     restart: always
     depends_on:
       - api
     ports:
       - "8080:80"
+    replicas: 3
 
 
   front_angu:
@@ -62,7 +71,7 @@ services:
     environment:
       REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /datas
     volumes:
-      - ./datas:/datas
+      - ./datas_volumes:/datas
 
   springboot-api-demo:
     container_name: "api"
@@ -77,7 +86,12 @@ services:
       SRPING_DATASOURCE_USERNAME: SRPING_DATASOURCE_USERNAME
       SRPING_DATASOURCE_PASSWORD: SRPING_DATASOURCE_PASSWORD
     networks:
-      - template_network
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: '0.001'
+          memory: 50M
 
   postgres:
     container_name: postgres_database
@@ -126,6 +140,5 @@ services:
 networks:
   backend:
   front:
-  template_network:
     driver: bridge
 #docker compose -f "docker-compose.yml" up -d --build 

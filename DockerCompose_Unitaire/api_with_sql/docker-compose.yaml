@@ -1,0 +1,73 @@
+version: "3.8"
+name: "api_with_sql"
+
+services:
+
+  api:
+    container_name: api_with_sql
+    build: "./api/"
+    env_file:
+      - ./.env
+    environment:
+      PORT: $API_PORT
+      API_MYSQL_HOST: $API_MYSQL_HOST
+      API_MYSQL_USER: $API_MYSQL_USER
+      API_MYSQL_PASSWORD: $API_MYSQL_PASSWORD
+      API_MYSQL_DATABASE: $API_MYSQL_DATABASE
+    restart: on-failure
+    expose:
+      - "$API_PORT"
+    ports:
+      - "3001-3005:$API_PORT"
+    networks:
+      - overlay
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 256m
+        reservations:
+          cpus: "0.5"
+          memory: 128m  
+
+  db:
+    container_name: dbMysql
+    build: "./sql/"
+    volumes: 
+      - "./sql/volumes:/var/lib/mysql"
+    env_file:
+      - ./.env
+    expose:
+      - "$SQL_PORT"
+    networks:
+      - overlay
+    environment:
+      MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
+      MYSQL_PASSWORD: $MYSQL_PASSWORD
+      MYSQL_USER: $MYSQL_USER
+      MYSQL_DATABASE: $MYSQL_DATABASE
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512m
+        reservations:
+          cpus: '0.5'
+          memory: 256m
+
+
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - overlay
+
+networks:
+  overlay:
